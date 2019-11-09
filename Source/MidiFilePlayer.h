@@ -11,21 +11,25 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class MidiFilePlayer
+class MidiFilePlayer : public Thread//, public HighResolutionTimer
 {
 public:
     MidiFilePlayer(MidiKeyboardState&);
     ~MidiFilePlayer();
     bool loadMidiFile(const String&);
     void play();
+    
 private:
+    void run() override;
     void setTracks();
     void printAllTracks();
+    
     MidiKeyboardState& keyboardState;
     MidiFile theMidiFile;
     
     MidiMessageSequence * tracks;
     //Array<MidiMessage> noteOnOffList;
     int numTracks;
+    bool canPlay = false;
     
 };

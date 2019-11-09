@@ -12,43 +12,17 @@
 
 String filePath = "/Users/RossHoyt/Documents/MidiFiles/WebsiteSource-mfiles-co-uk/beethoven/fur-elise.mid";
 
-MidiFilePlayer::MidiFilePlayer(MidiKeyboardState& keyState) :  keyboardState(keyState), theMidiFile()
+MidiFilePlayer::MidiFilePlayer(MidiKeyboardState& keyState) : Thread("Player Thread"), keyboardState(keyState),  theMidiFile()
 {
     loadMidiFile(filePath);
 }
 MidiFilePlayer::~MidiFilePlayer()
 {
+    stopThread (2000);
     delete [] tracks;
     
 }
-void MidiFilePlayer::play()
-{
-    DBG("Playing Midi File");
-    int numTrackEvents =tracks[1].getNumEvents();
-    
-    for(int i = 0; i < numTrackEvents - 1; i++)
-    {
-        MidiMessage* currMsg = &tracks[1].getEventPointer(i)->message;
-        
-        double thisMsgTimestamp = currMsg->getTimeStamp(), nextMsgTimestamp;
-        //if(i + 1 < numTrackEvents)
-        nextMsgTimestamp = tracks[1].getEventPointer(i + 1)->message.getTimeStamp();
-        DBG("NextMsgTimestamp " + std::to_string(nextMsgTimestamp));
-        //else
-        //{
-        //    DBG("Stopping play");
-        //    return;
-        //}
-        if(currMsg->isNoteOn())
-            keyboardState.noteOn(currMsg->getChannel(), currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-        else if(currMsg->isNoteOff())
-            keyboardState.noteOff(currMsg->getChannel(), currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-        
-        Time::waitForMillisecondCounter(nextMsgTimestamp - thisMsgTimestamp);
-    }
-    
-    
-}
+
 bool MidiFilePlayer::loadMidiFile(const String& path)
 {
     // TODO could optimize file loading slightly https://forum.juce.com/t/please-help-me-play-midi/5860
@@ -60,8 +34,49 @@ bool MidiFilePlayer::loadMidiFile(const String& path)
     DBG("Loaded Midi File");
     theMidiFile.convertTimestampTicksToSeconds();
     setTracks();
-    return true;
+    
+    canPlay = true;
+    return canPlay;
 
+}
+
+void MidiFilePlayer::play()
+{
+    if(canPlay) startThread(10);
+}
+// https://github.com/WeAreROLI/JUCE/blob/master/examples/Utilities/MultithreadingDemo.h
+void MidiFilePlayer::run()
+{
+    DBG("Playing Midi File in Thread run()");
+    int numTrackEvents = tracks[1].getNumEvents();
+    int i = 0;
+    while(i < numTrackEvents && !threadShouldExit())
+    //for(int i = 0; i < numTrackEvents; i++)
+    {
+        MidiMessage* currMsg = &tracks[1].getEventPointer(i)->message;
+        if(!currMsg->isEndOfTrackMetaEvent()) // TODO ERROR CORRECTION - MIGHT NOT BE END OF TRACK MSG
+        {
+            MidiMessage* nextMsg = &tracks[1].getEventPointer(i + 1)->message;
+            double thisMsgTimestamp = currMsg->getTimeStamp(), nextMsgTimestamp = nextMsg->getTimeStamp();
+            double waitTimeSecs = 0;
+            if(thisMsgTimestamp != nextMsgTimestamp)
+                waitTimeSecs = 1000 * (nextMsgTimestamp - thisMsgTimestamp);
+           
+            DBG("Waittime(ms): " + std::to_string(waitTimeSecs));
+            
+            if(currMsg->isNoteOn())
+                keyboardState.noteOn(currMsg->getChannel(), currMsg->getNoteNumber(), currMsg->getFloatVelocity());
+            else if(currMsg->isNoteOff())
+                keyboardState.noteOff(currMsg->getChannel(), currMsg->getNoteNumber(), currMsg->getFloatVelocity());
+            
+            if(waitTimeSecs != 0) wait((int)waitTimeSecs);
+        } else{
+            threadShouldExit();
+        }
+        i++;
+    }
+    DBG("Finished Playing!");
+    // TODO thread must regularly check the threadShouldExit() method
 }
 void MidiFilePlayer::setTracks()
 {
@@ -86,4 +101,5 @@ void MidiFilePlayer::printAllTracks()
             DBG(String(std::to_string(j)) + " @" + std::to_string(tracks[i].getEventPointer(j)->message.getTimeStamp()) + " " + tracks[i].getEventPointer(j)->message.getDescription());
     }
 }
+
 
