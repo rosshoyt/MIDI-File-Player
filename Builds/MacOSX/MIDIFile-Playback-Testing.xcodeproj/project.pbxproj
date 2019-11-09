@@ -465,6 +465,13 @@
 			path = "/Applications/JUCE/modules/juce_audio_utils";
 			sourceTree = "<absolute>";
 		};
+		F624C7ACF63AC7EE1F4AD7DC = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = StartButton.h;
+			path = ../../Source/StartButton.h;
+			sourceTree = "SOURCE_ROOT";
+		};
 		F7B8A7C62FA533126E32A30A = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
@@ -489,6 +496,7 @@
 		3AD0AACB53E7E9548520A0A7 = {
 			isa = PBXGroup;
 			children = (
+				F624C7ACF63AC7EE1F4AD7DC,
 				48ECF5F9AF68E0CA8606FB85,
 				625716B28F5CE1D382908BE1,
 				077A3DFB284088E028DDD1BD,

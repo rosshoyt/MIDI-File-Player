@@ -4,6 +4,7 @@
               jucerVersion="5.4.5">
   <MAINGROUP id="RoRoMZ" name="MIDIFile-Playback-Testing">
     <GROUP id="{76D95A37-B279-E423-CC4E-0C293345E782}" name="Source">
+      <FILE id="aD4mfv" name="StartButton.h" compile="0" resource="0" file="Source/StartButton.h"/>
       <FILE id="J2bRiO" name="SynthAudioSource.cpp" compile="1" resource="0"
             file="Source/SynthAudioSource.cpp"/>
       <FILE id="AIEfdQ" name="SynthAudioSource.h" compile="0" resource="0"

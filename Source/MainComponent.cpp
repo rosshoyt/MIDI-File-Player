@@ -9,16 +9,21 @@
 #include "MainComponent.h"
 
 //f==============================================================================
-MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), synthAudioSource (keyboardState), midiFilePlayer()
+MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), playButton(), synthAudioSource (keyboardState), midiFilePlayer(keyboardState)
 {
     
     addAndMakeVisible (keyboardComponent);
+    addAndMakeVisible(playButton);
+    playButton.setButtonText("Play");
+    playButton.addListener(this);
+    
     setAudioChannels (0, 2);
     
-    setSize (MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT + MAX_KEYB_HEIGHT);
+    setSize (MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT);
     
     updateMidiDevices();
     startTimer(400);
+    
 }
 
 MainComponent::~MainComponent()
@@ -40,21 +45,23 @@ void MainComponent::paint (Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
 
-    //g.setFont (Font (16.0f));
-    //g.setColour (Colours::white);
-    //g.drawText ("Hello World!", getLocalBounds(), Justification::centred, true);
+    
 }
 
 void MainComponent::resized()
 {
-    int keybCompWidth = getWidth() - KEYB_MARGIN * 2, keybCompHeight = getHeight() - 5;
-    keyboardComponent.setBounds (KEYB_MARGIN, KEYB_MARGIN, keybCompWidth > MAX_KEYB_WIDTH ? MAX_KEYB_WIDTH : keybCompWidth, keybCompHeight > MAX_KEYB_HEIGHT ? MAX_KEYB_HEIGHT : keybCompHeight);
+    int keybCompWidth = getWidth() - MARGIN * 2, keybCompHeight = getHeight() - 5;
+    keyboardComponent.setBounds (MARGIN, MARGIN, keybCompWidth > MAX_KEYB_WIDTH ? MAX_KEYB_WIDTH :
+                                 keybCompWidth, keybCompHeight > MAX_KEYB_HEIGHT ? MAX_KEYB_HEIGHT : keybCompHeight);
+    
+    playButton.setBounds(MARGIN, getHeight() - (MARGIN + PLAY_BUTTON_HEIGHT), PLAY_BUTTON_WIDTH, PLAY_BUTTON_HEIGHT);
     
 }
 
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
     synthAudioSource.prepareToPlay (samplesPerBlockExpected, sampleRate);
+    
 }
 
 void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill)
@@ -65,6 +72,17 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
 void MainComponent::releaseResources()
 {
     synthAudioSource.releaseResources();
+}
+
+void MainComponent::buttonClicked(Button *button)
+{
+    DBG("BUTTON CLICKED");
+    if(button == &playButton)
+    {
+        DBG("PLAYING");
+        midiFilePlayer.play();
+        
+    }
 }
 
 void MainComponent::timerCallback()

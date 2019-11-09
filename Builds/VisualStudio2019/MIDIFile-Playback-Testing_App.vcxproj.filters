@@ -2334,6 +2334,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\StartButton.h">
+      <Filter>MIDIFile-Playback-Testing\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\SynthAudioSource.h">
       <Filter>MIDIFile-Playback-Testing\Source</Filter>
     </ClInclude>

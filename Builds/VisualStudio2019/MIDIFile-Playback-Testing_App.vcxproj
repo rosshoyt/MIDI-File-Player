@@ -1909,6 +1909,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_opengl.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\StartButton.h"/>
     <ClInclude Include="..\..\Source\SynthAudioSource.h"/>
     <ClInclude Include="..\..\Source\MidiFilePlayer.h"/>
     <ClInclude Include="..\..\Source\MainComponent.h"/>
