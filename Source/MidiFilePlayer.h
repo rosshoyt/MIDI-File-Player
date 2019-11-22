@@ -32,19 +32,11 @@ private:
     
     void setTracks();
     void printAllTracks();
-    //void processMidiMessage(const MidiMessage*, bool*, HashMap<int,int>*);
     
     MidiKeyboardState& keyboardState;
     MidiFile theMidiFile;
+    MidiMessageSequence * tracks;
     
-    
-    //Array<MidiMessage> noteOnOffList;
     int numTracks;
     bool canPlay = false;
-    
-    
-    // MIDI Containers
-    MidiMessageSequence * tracks;
-    typedef std::map<int, MidiMessage*> ChannelNoteMap;
-    typedef std::pair<int, MidiMessage*> ChannelNotePair;
 };
