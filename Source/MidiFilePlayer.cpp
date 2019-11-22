@@ -47,9 +47,7 @@ void MidiFilePlayer::play()
 // https://github.com/WeAreROLI/JUCE/blob/master/examples/Utilities/MultithreadingDemo.h
 void MidiFilePlayer::run()
 {
-    DBG("Playing Midi File");
-    if(ignoreSustainPedalMessages) playFile_IgnoreSustainPedal();
-    else playFile();
+    playFile();
 }
 void MidiFilePlayer::playFile()
 {
@@ -68,95 +66,56 @@ void MidiFilePlayer::playFile()
             MidiMessage* nextMsg = &tracks[1].getEventPointer(i + 1)->message;
             double thisMsgTimestamp = currMsg->getTimeStamp(), nextMsgTimestamp = nextMsg->getTimeStamp();
             
-            //if(thisMsgTimestamp != nextMsgTimestamp)
             double waitTimeSecs = 1000 * (nextMsgTimestamp - thisMsgTimestamp);
             
             DBG("Waittime(ms): " + std::to_string(waitTimeSecs));
             
             if(currMsg->isNoteOn())
             {
-                DBG("NoteOn" + std::to_string(currMsg->getNoteNumber()));
+                DBG("NoteOn " + std::to_string(currMsg->getNoteNumber()));
                 keyboardState.noteOn(1, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-                if(sustainOn) channelNoteMap.add(currMsg->getNoteNumber());
+                if(useSustainPedalMessages && sustainOn) channelNoteMap.add(currMsg->getNoteNumber());
             }
             else if(currMsg->isNoteOff())
             {
-                DBG("NoteOff" + std::to_string(currMsg->getNoteNumber()));
-                if(!sustainOn) keyboardState.noteOff(1/*currMsg->getChannel()*/, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-                else DBG("Note " + std::to_string(currMsg->getNoteNumber()) + " RELEASED BUT SUSTAINED");
+                DBG("NoteOff " + std::to_string(currMsg->getNoteNumber()));
+//                if(useSustainPedalMessages && sustainOn)
+//                    DBG("Note " + std::to_string(currMsg->getNoteNumber()) + " RELEASED BUT SUSTAINED");
+//                else
+                if(!useSustainPedalMessages || !sustainOn)
+                    keyboardState.noteOff(1, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
             }
             else if(currMsg->isSustainPedalOn())
             {
-                DBG("---SUSTAIN PEDAL ON");
+                DBG("---SUSTAIN PEDAL ON---");
                 sustainOn = true;
             }
             else if(currMsg->isSustainPedalOff())
             {
+                DBG("---SUSTAIN PEDAL OFF---");
                 sustainOn = false;
-                DBG("---SUS PED OFF--- #Notes to release:" + std::to_string(channelNoteMap.size()));
-                //const int i = *channelNoteMap.begin();
                 for(int i = 0; i < channelNoteMap.size(); ++i)
                 {
                     int relNote = channelNoteMap.getUnchecked(i);
-                    DBG("RELEASING NOTE" + std::to_string(relNote));
-                    keyboardState.noteOff(1, relNote, 96);
+                    DBG(std::to_string(i + 1) + ". RELEASING PITCH" + std::to_string(relNote));
+                    keyboardState.noteOff(1, relNote, 64);
                 }
-                
             }
-            
             if(waitTimeSecs != 0) wait((int)waitTimeSecs);
         } else{
+            DBG("End of MIDI Track!");
             threadShouldExit();
         }
         i++;
     }
-    DBG("Finished Playing!");
+    DBG("Closing Play() thread");
 }
-void MidiFilePlayer::playFile_IgnoreSustainPedal()
-{
-    int numTrackEvents = tracks[1].getNumEvents();
-    int i = 0;
-    
-    while(i < numTrackEvents && !threadShouldExit())
-    {
-        MidiMessage* currMsg = &tracks[1].getEventPointer(i)->message;
-        if(!currMsg->isEndOfTrackMetaEvent()) // TODO ERROR CORRECTION - MIGHT NOT BE END OF TRACK MSG
-        {
-            MidiMessage* nextMsg = &tracks[1].getEventPointer(i + 1)->message;
-            double thisMsgTimestamp = currMsg->getTimeStamp(), nextMsgTimestamp = nextMsg->getTimeStamp();
-            
-            //if(thisMsgTimestamp != nextMsgTimestamp)
-            double waitTimeSecs = 1000 * (nextMsgTimestamp - thisMsgTimestamp);
-            
-            DBG("Waittime(ms): " + std::to_string(waitTimeSecs));
-            
-            if(currMsg->isNoteOn())
-            {
-                DBG("NoteOn" + std::to_string(currMsg->getNoteNumber()));
-                keyboardState.noteOn(1, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-            }
-            else if(currMsg->isNoteOff())
-            {
-                DBG("NoteOff" + std::to_string(currMsg->getNoteNumber()));
-                keyboardState.noteOff(1/*currMsg->getChannel()*/, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-               
-            }
-            if(waitTimeSecs != 0) wait((int)waitTimeSecs);
-        } else{
-            threadShouldExit();
-        }
-        i++;
-    }
-    DBG("Finished Playing!");
-}
-//void MidiFilePlayer::processMidiMessage(const MidiMessage* currMsg, bool* sustainOn, HashMap<int,int>* channelNoteMap){
-//
-//
-//}
+
 void MidiFilePlayer::stop()
 {
     DBG("Stopping MidiFilePlayer");
-    threadShouldExit();
+    stopThread(20);
+    keyboardState.allNotesOff(1);
 }
 void MidiFilePlayer::setTracks()
 {

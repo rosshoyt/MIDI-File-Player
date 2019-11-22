@@ -21,7 +21,7 @@ public:
     // methods controlled by buttons
     void play();
     void stop();
-    bool ignoreSustainPedalMessages = true;
+    bool useSustainPedalMessages = false;
     
     
 private:

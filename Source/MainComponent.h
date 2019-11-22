@@ -49,6 +49,8 @@ private:
     
     //UI Components
     TextButton playButton;
+    TextButton stopButton;
+    TextButton useSustainPedalButton;
     //StartButton startButton;
     
     // Custom Member var classes
@@ -58,7 +60,7 @@ private:
     
     // Constants
     static const int MARGIN = 4, MAX_WINDOW_HEIGHT = 800, MAX_WINDOW_WIDTH = 1200 + 2 * MARGIN,
-            MAX_KEYB_WIDTH = 1200, MAX_KEYB_HEIGHT = 82, PLAY_BUTTON_WIDTH = 50, PLAY_BUTTON_HEIGHT = 30;
+            MAX_KEYB_WIDTH = 1200, MAX_KEYB_HEIGHT = 82, TEXT_BUTTON_WIDTH = 50, TEXT_BUTTON_HEIGHT = 30;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

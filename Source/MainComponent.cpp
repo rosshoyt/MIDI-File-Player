@@ -9,13 +9,22 @@
 #include "MainComponent.h"
 
 //f==============================================================================
-MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), playButton(), synthAudioSource (keyboardState), midiFilePlayer(keyboardState)
+MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), playButton(), stopButton(), useSustainPedalButton(), synthAudioSource (keyboardState), midiFilePlayer(keyboardState)
 {
     
     addAndMakeVisible (keyboardComponent);
+    
     addAndMakeVisible(playButton);
     playButton.setButtonText("Play");
     playButton.addListener(this);
+    
+    addAndMakeVisible(stopButton);
+    stopButton.setButtonText("Stop");
+    stopButton.addListener(this);
+    
+    addAndMakeVisible(useSustainPedalButton);
+    useSustainPedalButton.setButtonText("Use Sustain Pedal");
+    useSustainPedalButton.addListener(this);
     
     setAudioChannels (0, 2);
     
@@ -54,8 +63,12 @@ void MainComponent::resized()
     keyboardComponent.setBounds (MARGIN, MARGIN, keybCompWidth > MAX_KEYB_WIDTH ? MAX_KEYB_WIDTH :
                                  keybCompWidth, keybCompHeight > MAX_KEYB_HEIGHT ? MAX_KEYB_HEIGHT : keybCompHeight);
     
-    playButton.setBounds(MARGIN, getHeight() - (MARGIN + PLAY_BUTTON_HEIGHT), PLAY_BUTTON_WIDTH, PLAY_BUTTON_HEIGHT);
+    float bottomButtonY =  getHeight() - (MARGIN + TEXT_BUTTON_HEIGHT);
+    playButton.setBounds(MARGIN, bottomButtonY, TEXT_BUTTON_WIDTH, TEXT_BUTTON_HEIGHT);
     
+    stopButton.setBounds(2 * MARGIN + TEXT_BUTTON_WIDTH, bottomButtonY, TEXT_BUTTON_WIDTH, TEXT_BUTTON_HEIGHT);
+    
+    useSustainPedalButton.setBounds(3*MARGIN + 2 * TEXT_BUTTON_WIDTH, bottomButtonY, TEXT_BUTTON_WIDTH * 3, TEXT_BUTTON_HEIGHT);
 }
 
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
@@ -83,6 +96,17 @@ void MainComponent::buttonClicked(Button *button)
         midiFilePlayer.play();
         
     }
+    else if(button == &stopButton)
+    {
+        DBG("STOPPING");
+        midiFilePlayer.stop();
+    }
+    else if(button == &useSustainPedalButton)
+    {
+        DBG("USE SUSTAIN PEDAL BUTTON PRESSED");
+        midiFilePlayer.useSustainPedalMessages = !midiFilePlayer.useSustainPedalMessages;
+    }
+    
 }
 
 void MainComponent::timerCallback()
