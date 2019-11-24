@@ -10,12 +10,16 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "AtomicWrapper.h"
+#include <set>
+#include <map>
 
-class OpenGLDisplay  : public Component, private OpenGLRenderer, private AsyncUpdater
+class OpenGLDisplay  : public Component, public MidiKeyboardStateListener, private OpenGLRenderer, private AsyncUpdater
 {
 public:
     OpenGLDisplay()
     {
+        
         if (auto* peer = getPeer())
             peer->setCurrentRenderingEngine(0);
 
@@ -24,14 +28,22 @@ public:
         openGLContext.setRenderer (this);
         openGLContext.attachTo (*this);
         openGLContext.setContinuousRepainting (true);
-
+        
+        // initialize noteOnsMap
+        for(int i = 0; i < 12; ++i)
+        {
+            noteOnsMap.insert(std::pair<int, std::set<int>>(i, std::set<int>()));
+        }
     }
 
     ~OpenGLDisplay() override
     {
         openGLContext.detach();
     }
-
+//    void setChordSourceArray(const std::vector<AtomicWrapper<int>> &chordSource) {
+//        v_a = chordSource;
+//
+//    }
     void newOpenGLContextCreated() override
     {
         // nothing to do in this case - we'll initialise our shaders + textures
@@ -77,16 +89,28 @@ public:
     void drawBackground2DStuff (float desktopScale)
     {
         // Create an OpenGLGraphicsContext that will draw into this GL window..
-        std::unique_ptr<LowLevelGraphicsContext> glRenderer (createOpenGLGraphicsContext (openGLContext,
-                                                                                          roundToInt (desktopScale * getWidth()),
-                                                                                          roundToInt (desktopScale * getHeight())));
+        std::unique_ptr<LowLevelGraphicsContext> glRenderer (createOpenGLGraphicsContext (openGLContext, roundToInt (desktopScale * getWidth()), roundToInt(desktopScale * getHeight())));
 
         if (glRenderer.get() != nullptr)
         {
             Graphics g (*glRenderer);
             g.addTransform (AffineTransform::scale (desktopScale));
-
-            for (auto s : stars)
+            
+            float recWidth = getWidth() / 12, recHeight = getHeight();
+            
+            
+            
+            for(int i = 0; i < 12; ++i)
+            {
+                
+                Path p;
+                p.addRectangle(i * recWidth, 0,(i+1) * recWidth,recHeight);
+                                if(noteOnsMap.find(i)->second.size() > 0)
+                    g.setColour(Colours::white);
+                else g.setColour(Colours::black);
+                g.fillPath(p);
+            }
+/*            for (auto s : stars)
             {
                 auto size = 0.25f;
 
@@ -106,9 +130,13 @@ public:
                                                    Colours::red.withRotatedHue (hue).withAlpha (0.5f),
                                                    0, (float) getHeight(), false));
                 g.fillPath (p);
+                
             }
+ */
         }
     }
+    
+    
     OpenGLContext openGLContext;
 
 
@@ -127,6 +155,7 @@ public:
         float getValue() const
         {
             double v = fmod (phase + speed * Time::getMillisecondCounterHiRes(), 2.0);
+            
             return (float) (v >= 1.0 ? (2.0 - v) : v);
         }
 
@@ -146,5 +175,29 @@ public:
         SlowerBouncingNumber x, y, hue, angle;
     };
     BackgroundStar stars[3];
-
+    
+    
+    // MIDI Handling
+    //std::set<int> notesOn;
+    std::map<int, std::set<int>> noteOnsMap;
+    
+    void handleNoteOn(MidiKeyboardState * source, int midiChannel, int midiNoteNumber, float velocity ) override
+    {
+        //notesOn.insert(midiNoteNumber);
+        //int fundamentalPitch = midiNoteNumber % 12;
+        std::map<int, std::set<int>>::iterator it = noteOnsMap.find(midiNoteNumber % 12);
+        if(it != noteOnsMap.end()) // probably should never be the case, could also use [] operator possibly
+            it->second.insert(midiNoteNumber);
+            
+            
+    }
+    void handleNoteOff(MidiKeyboardState * source,int midiChannel, int midiNoteNumber, float velocity) override
+    {
+        //notesOn.erase(midiNoteNumber);
+        std::map<int, std::set<int>>::iterator it = noteOnsMap.find(midiNoteNumber % 12);
+        if(it != noteOnsMap.end()) // probably should never be the case, could also use [] operator possibly
+            it->second.erase(midiNoteNumber);
+    }
+    
+    
 };

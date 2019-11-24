@@ -11,9 +11,9 @@
 //f==============================================================================
 MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), playButton(), stopButton(), useSustainPedalButton(), openGLDisplay(), synthAudioSource (keyboardState), midiFilePlayer(keyboardState)
 {
-
+    
     addAndMakeVisible (keyboardComponent);
-
+    
     addAndMakeVisible(playButton);
     playButton.setButtonText("Play");
     playButton.addListener(this);
@@ -27,16 +27,20 @@ MainComponent::MainComponent() :   keyboardComponent (keyboardState, MidiKeyboar
     useSustainPedalButton.addListener(this);
 
     addAndMakeVisible(openGLDisplay);
-
+    keyboardState.addListener(&openGLDisplay);
+    
     setAudioChannels (0, 2);
 
     setSize (MAX_WINDOW_WIDTH, MAX_WINDOW_HEIGHT);
 
     updateMidiDevices();
+    
     startTimer(400);
-
 }
-
+void MainComponent::setSharedChordState()
+{
+    //midiFilePlayer.setSharedChordArray(chordStateArray);
+}
 MainComponent::~MainComponent()
 {
     shutdownAudio();
@@ -108,7 +112,7 @@ void MainComponent::buttonClicked(Button *button)
     }
     else if(button == &useSustainPedalButton)
     {
-        DBG("USE SUSTAIN PEDAL BUTTON PRESSED");
+        DBG("USE-SUSTAIN-PEDAL BUTTON PRESSED");
         midiFilePlayer.useSustainPedalMessages = !midiFilePlayer.useSustainPedalMessages;
     }
 

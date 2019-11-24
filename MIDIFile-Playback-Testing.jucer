@@ -4,9 +4,10 @@
               jucerVersion="5.4.5">
   <MAINGROUP id="RoRoMZ" name="MIDIFile-Playback-Testing">
     <GROUP id="{76D95A37-B279-E423-CC4E-0C293345E782}" name="Source">
-      <FILE id="aD4mfv" name="StartButton.h" compile="0" resource="0" file="Source/StartButton.h"/>
-      <FILE id="J2bRiO" name="SynthAudioSource.cpp" compile="1" resource="0"
-            file="Source/SynthAudioSource.cpp"/>
+      <FILE id="LKpCGI" name="AtomicWrapper.h" compile="0" resource="0" file="Source/AtomicWrapper.h"/>
+      <FILE id="lHRAAa" name="OpenGLDisplay.cpp" compile="1" resource="0"
+            file="Source/OpenGLDisplay.cpp"/>
+      <FILE id="H5Fd6K" name="OpenGLDisplay.h" compile="0" resource="0" file="Source/OpenGLDisplay.h"/>
       <FILE id="AIEfdQ" name="SynthAudioSource.h" compile="0" resource="0"
             file="Source/SynthAudioSource.h"/>
       <FILE id="lvpOvV" name="MidiFilePlayer.cpp" compile="1" resource="0"

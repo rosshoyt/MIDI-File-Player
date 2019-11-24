@@ -138,7 +138,7 @@
     <Lib/>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\SynthAudioSource.cpp"/>
+    <ClCompile Include="..\..\Source\OpenGLDisplay.cpp"/>
     <ClCompile Include="..\..\Source\MidiFilePlayer.cpp"/>
     <ClCompile Include="..\..\Source\MainComponent.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
@@ -1909,7 +1909,8 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_opengl.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\StartButton.h"/>
+    <ClInclude Include="..\..\Source\AtomicWrapper.h"/>
+    <ClInclude Include="..\..\Source\OpenGLDisplay.h"/>
     <ClInclude Include="..\..\Source\SynthAudioSource.h"/>
     <ClInclude Include="..\..\Source\MidiFilePlayer.h"/>
     <ClInclude Include="..\..\Source\MainComponent.h"/>

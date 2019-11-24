@@ -53,7 +53,7 @@ void MidiFilePlayer::playFile()
 {
     int numTrackEvents = tracks[1].getNumEvents();
     int i = 0;
-    SortedSet<int> channelNoteMap;
+    SortedSet<int> sustainedNotesSet;
     //std::vector<MidiMessage*> channelNoteMap;
     //std::unordered_multimap<int, int> channelMap;
     //ChannelNoteMap channelNoteMap;
@@ -74,7 +74,7 @@ void MidiFilePlayer::playFile()
             {
                 DBG("NoteOn " + std::to_string(currMsg->getNoteNumber()));
                 keyboardState.noteOn(1, currMsg->getNoteNumber(), currMsg->getFloatVelocity());
-                if(useSustainPedalMessages && sustainOn) channelNoteMap.add(currMsg->getNoteNumber());
+                if(useSustainPedalMessages && sustainOn) sustainedNotesSet.add(currMsg->getNoteNumber());
             }
             else if(currMsg->isNoteOff())
             {
@@ -94,9 +94,9 @@ void MidiFilePlayer::playFile()
             {
                 DBG("---SUSTAIN PEDAL OFF---");
                 sustainOn = false;
-                for(int i = 0; i < channelNoteMap.size(); ++i)
+                for(int i = 0; i < sustainedNotesSet.size(); ++i)
                 {
-                    int relNote = channelNoteMap.getUnchecked(i);
+                    int relNote = sustainedNotesSet.getUnchecked(i);
                     DBG(std::to_string(i + 1) + ". RELEASING PITCH" + std::to_string(relNote));
                     keyboardState.noteOff(1, relNote, 64);
                 }
@@ -140,5 +140,6 @@ void MidiFilePlayer::printAllTracks()
             DBG(String(std::to_string(j)) + " @" + std::to_string(tracks[i].getEventPointer(j)->message.getTimeStamp()) + " " + tracks[i].getEventPointer(j)->message.getDescription());
     }
 }
+
 
 

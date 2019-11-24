@@ -412,7 +412,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\SynthAudioSource.cpp">
+    <ClCompile Include="..\..\Source\OpenGLDisplay.cpp">
       <Filter>MIDIFile-Playback-Testing\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\MidiFilePlayer.cpp">
@@ -2334,7 +2334,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\StartButton.h">
+    <ClInclude Include="..\..\Source\AtomicWrapper.h">
+      <Filter>MIDIFile-Playback-Testing\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\OpenGLDisplay.h">
       <Filter>MIDIFile-Playback-Testing\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\SynthAudioSource.h">

@@ -10,6 +10,7 @@
 #include "MidiFilePlayer.h"
 #include "SynthAudioSource.h"
 #include "OpenGLDisplay.h"
+#include "AtomicWrapper.h"
 
 //==============================================================================
 /*
@@ -40,7 +41,7 @@ private:
     // Methods
     void timerCallback() override;
     void updateMidiDevices();
-
+    void setSharedChordState();
     // Member Vars
     MidiKeyboardState keyboardState;
     MidiKeyboardComponent keyboardComponent;
@@ -56,6 +57,8 @@ private:
     SynthAudioSource synthAudioSource;
     MidiFilePlayer midiFilePlayer;
 
+    // Shared state
+    std::vector<AtomicWrapper<int>> chordStateArray;
 
     // Constants
     static const int MARGIN = 4, MAX_WINDOW_HEIGHT = 800, MAX_WINDOW_WIDTH = 1200 + 2 * MARGIN,
