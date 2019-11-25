@@ -10,7 +10,6 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "AtomicWrapper.h"
 
 class MidiFilePlayer : public Thread//, public HighResolutionTimer
 {

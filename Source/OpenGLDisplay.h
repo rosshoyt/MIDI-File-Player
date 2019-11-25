@@ -10,7 +10,6 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "AtomicWrapper.h"
 #include <set>
 #include <map>
 
@@ -96,43 +95,48 @@ public:
             Graphics g (*glRenderer);
             g.addTransform (AffineTransform::scale (desktopScale));
             
-            float recWidth = getWidth() / 12, recHeight = getHeight();
+            drawBasicPitchDisplay(g);
+            drawBackroundStars(g);
+    
+        }
+    }
+    void drawBasicPitchDisplay(Graphics &g)
+    {
+        float recWidth = getWidth() / 12, recHeight = getHeight();
+        for(int i = 0; i < 12; ++i)
+        {
             
+            Path p;
+            p.addRectangle(i * recWidth, 0,(i+1) * recWidth,recHeight);
+            if(noteOnsMap.find(i)->second.size() > 0)
+                g.setColour(Colours::white);
+            else g.setColour(Colours::black);
+            g.fillPath(p);
+        }
+    }
+    void drawBackroundStars(Graphics &g)
+    {
+        for (auto s : stars)
+        {
+            auto size = 0.25f;
             
+            // This stuff just creates a spinning star shape and fills it..
+            Path p;
+            p.addStar ({ getWidth()  * s.x.getValue(),
+                getHeight() * s.y.getValue() },
+                       7,
+                       getHeight() * size * 0.5f,
+                       getHeight() * size,
+                       s.angle.getValue());
             
-            for(int i = 0; i < 12; ++i)
-            {
-                
-                Path p;
-                p.addRectangle(i * recWidth, 0,(i+1) * recWidth,recHeight);
-                                if(noteOnsMap.find(i)->second.size() > 0)
-                    g.setColour(Colours::white);
-                else g.setColour(Colours::black);
-                g.fillPath(p);
-            }
-/*            for (auto s : stars)
-            {
-                auto size = 0.25f;
-
-                // This stuff just creates a spinning star shape and fills it..
-                Path p;
-                p.addStar ({ getWidth()  * s.x.getValue(),
-                    getHeight() * s.y.getValue() },
-                           7,
-                           getHeight() * size * 0.5f,
-                           getHeight() * size,
-                           s.angle.getValue());
-
-                auto hue = s.hue.getValue();
-
-                g.setGradientFill (ColourGradient (Colours::green.withRotatedHue (hue).withAlpha (0.8f),
-                                                   0, 0,
-                                                   Colours::red.withRotatedHue (hue).withAlpha (0.5f),
-                                                   0, (float) getHeight(), false));
-                g.fillPath (p);
-                
-            }
- */
+            auto hue = s.hue.getValue();
+            
+            g.setGradientFill (ColourGradient (Colours::green.withRotatedHue (hue).withAlpha (0.8f),
+                                               0, 0,
+                                               Colours::red.withRotatedHue (hue).withAlpha (0.5f),
+                                               0, (float) getHeight(), false));
+            g.fillPath (p);
+            
         }
     }
     
