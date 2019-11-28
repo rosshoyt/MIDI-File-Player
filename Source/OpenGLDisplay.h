@@ -13,6 +13,10 @@
 #include <set>
 #include <map>
 
+#define PI 3.1415926535897932384
+#define NOTES_PER_OCTAVE 12
+#define FIFTH 7
+
 class OpenGLDisplay  : public Component, public MidiKeyboardStateListener, private OpenGLRenderer, private AsyncUpdater
 {
 public:
@@ -75,9 +79,58 @@ public:
 
         auto desktopScale = (float) openGLContext.getRenderingScale();
 
-        OpenGLHelpers::clear (Colours::lightblue);//getUIColourIfAvailable (LookAndFeel_V4::ColourScheme::UIColour::windowBackground, Colours::lightblue));
+        OpenGLHelpers::clear (Colours::black);//getUIColourIfAvailable (LookAndFeel_V4::ColourScheme::UIColour::windowBackground, Colours::lightblue));
 
-        drawBackground2DStuff (desktopScale);
+        if(true) drawBackground2DStuff (desktopScale);
+        else {
+            // Having used the juce 2D renderer, it will have messed-up a whole load of GL state, so
+            // we need to initialise some important settings before doing our normal GL 3D drawing..
+            glEnable (GL_DEPTH_TEST);
+            glDepthFunc (GL_LESS);
+            glEnable (GL_BLEND);
+            glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
+            glEnable (GL_TEXTURE_2D);
+            
+            glViewport (0, 0, roundToInt (desktopScale * getWidth()), roundToInt (desktopScale * getHeight()));
+            
+            //texture.bind();
+            
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            
+            //  shader->use();
+            
+            
+            //if(uniforms->translations.get() != nullptr)
+            //    uniforms->translations->set(translations);
+            //        for(int i = 0; i < 128; i++){
+            //            if (uniforms->projectionMatrix.get() != nullptr)
+            //                uniforms->projectionMatrix->setMatrix4 (getProjectionMatrix().mat, 1, false);
+            //
+            //
+            //
+            //            if (uniforms->texture.get() != nullptr)
+            //                uniforms->texture->set ((GLint) 0);
+            //
+            //            if (uniforms->lightPosition.get() != nullptr)
+            //                uniforms->lightPosition->set (-15.0f, 10.0f, 15.0f, 0.0f);
+            //
+            //            if (uniforms->bouncingNumber.get() != nullptr)
+            //                uniforms->bouncingNumber->set (bouncingNumber.getValue());
+            //
+            //            if (uniforms->viewMatrix.get() != nullptr)
+            //            {
+            //                //Matrix3D<float> translatedViewMatrix(getViewMatrix().mat + translations[i].mat);
+            //                uniforms->viewMatrix->setMatrix4 (getViewMatrix().mat, 1, false);
+            //            }
+            //            noteShapes->draw (openGLContext, *attributes);
+            //        }
+            
+            // Reset the element buffers so child Components draw correctly
+            openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
+            openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
     }
     void paint (Graphics&) override {}
 
@@ -95,12 +148,88 @@ public:
             Graphics g (*glRenderer);
             g.addTransform (AffineTransform::scale (desktopScale));
             
-            drawBasicPitchDisplay(g);
-            drawBackroundStars(g);
-    
+            //drawHorizontalPitchDisplay(g);
+            //drawBackroundStars(g);
+            //drawCircleOfFifths2D(g);
+            drawCircleOfFifthsTriangles(g);
         }
     }
-    void drawBasicPitchDisplay(Graphics &g)
+    void drawCircleOfFifthsTriangles(Graphics &g)
+    {
+        float radius = (getWidth() > getHeight() ? getHeight() : getWidth()) / 2;
+        
+        
+        float x1 = getWidth() / 2,  y1 = getHeight() / 2, x2,  y2,  x3,  y3;
+        
+        float angle = 360 / 12;
+        int i = 0;
+        for(int i = 0; i < NOTES_PER_OCTAVE; i++)
+        {
+            Path tri;
+            x2 = x1 + radius * cos(degreesToRadians(i * angle));
+            y2 = y1 + radius * sin(degreesToRadians(i * angle));
+            x3 = x1 + radius * cos(degreesToRadians((i + 1) * angle));
+            y3 = y1 + radius * sin(degreesToRadians((i + 1) * angle));
+            
+        
+            tri.addTriangle(x1, y1, x2, y2, x3, y3);
+         
+            
+            g.setColour(i % 2 == 0 ? Colours::seagreen : Colours::blue);
+            g.fillPath(tri);
+            
+            if(isFundamentalPitchActive(i))
+            {
+                g.setColour(Colours::white);
+                g.setOpacity(0.5);
+                g.fillPath(tri);
+            }
+            //g.drawLine(getX(), getY() + i * 2, getX() + getWidth(), getY() + i * 2);
+            
+        }
+        
+    }
+    void drawCircleOfFifths2D(Graphics &g)
+    {
+        float radius = (getWidth() > getHeight() ? getHeight() : getWidth()) / 2;
+        float sliceAng = 2 * PI / NOTES_PER_OCTAVE;
+        int startingLocation = 0; // 7?
+        
+        float circumference = 2 * PI * radius;
+        float rectAng = 360 / 12;
+        
+        float xStart = getWidth() / 2, yStart = getHeight() / 2 + radius;
+        float angle = 360 / 12;
+        for(int i = 0; i < NOTES_PER_OCTAVE; ++i)
+        {
+            Path p;
+            
+            //sliceAng * startingLocation;
+            
+            float x = radius * cos(angle * i);//radius + sliceAng * cos(i * angle);
+            float y = radius * sin(angle * i);
+            
+            float width = radius * cos(angle * (i + 1));
+            float height = radius * sin(angle * (i + 1));
+            float fromRadians = angle;//degreesToRadians(angle * i);
+            float toRadians = angle;//degreesToRadians(angle * (i + 1));
+            float innerCircleProportionalSize = -1;
+            
+            
+            float toRadzz = sin(360/12 * radius);
+            p.addPieSegment(x, y, width, height, fromRadians, toRadians, innerCircleProportionalSize);
+            
+            g.setColour( i % 2 == 0 ? Colours::white : Colours::blue);
+            //g.drawLine(x,y,width,height);
+            g.drawRect(x,y,width,height);
+            //g.fillPath(p);
+            
+            startingLocation = (startingLocation + 1) % 12;
+        }
+
+    
+    }
+    void drawHorizontalPitchDisplay(Graphics &g)
     {
         float recWidth = getWidth() / 12, recHeight = getHeight();
         for(int i = 0; i < 12; ++i)
@@ -142,7 +271,7 @@ public:
     
     
     OpenGLContext openGLContext;
-
+    bool draw2D = false;
 
 
     //==============================================================================
@@ -201,6 +330,11 @@ public:
         std::map<int, std::set<int>>::iterator it = noteOnsMap.find(midiNoteNumber % 12);
         if(it != noteOnsMap.end()) // probably should never be the case, could also use [] operator possibly
             it->second.erase(midiNoteNumber);
+    }
+    
+    bool isFundamentalPitchActive(int pitch)
+    {
+        return noteOnsMap.find(pitch)->second.size() > 0;
     }
     
     
